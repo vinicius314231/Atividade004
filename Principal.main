@@ -1,0 +1,29 @@
+package  br.ufscar.dc.compiladores.alguma.gerador ;
+
+import  br.ufscar.dc.compiladores.alguma.gerador.AlgumaParser.ProgramaContext ;
+import  java.io.IOException ;
+import  java.io.PrintWriter ;
+import  org.antlr.v4.runtime.CharStream ;
+import  org.antlr.v4.runtime.CharStreams ;
+import  org.antlr.v4.runtime.CommonTokenStream ;
+
+public  class  Principal {
+     public  static  void  main ( String  args []) lança  IOException {
+         CharStream cs =  CharStreams . fromFileName (args [ 0 ]);
+        AlgumaLexer lexer =  novo  AlgumaLexer (cs);
+        Tokens CommonTokenStream =  new  CommonTokenStream (lexer);
+        Analisador AlgumaParser =  novo  AlgumaParser (tokens);
+        ProgramaContext arvore = analisador . programa ();
+        AlgumaSemantico as =  novo  AlgumaSemantico ();
+        como . visitPrograma (arvore);
+        AlgumaSemanticoUtils . errosSemanticos . forEach (s) - >  System . out . println (s));
+        
+        se ( AlgumaSemanticoUtils . errosSemanticos . isEmpty ()) {
+             AlgumaGeradorC agc =  novo  AlgumaGeradorC ();
+            agc . visitPrograma (arvore);
+            try ( PrintWriter pw =  new  PrintWriter (args [ 1 ])) {
+                pw . imprimir (agc . saida . toString ());
+            }
+        }
+    }
+}
