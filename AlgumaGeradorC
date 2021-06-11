@@ -1,0 +1,204 @@
+package  br.ufscar.dc.compiladores.alguma.gerador ;
+
+import  br.ufscar.dc.compiladores.alguma.gerador.TabelaDeSimbolos.TipoAlguma ;
+
+public  class  AlgumaGeradorC  estende  AlgumaBaseVisitor < Void > {
+
+    StringBuilder saida;
+    TabelaDeSimbolos tabela;
+
+    public  AlgumaGeradorC () {
+        saida =  novo  StringBuilder ();
+        isso . tabela =  novo  TabelaDeSimbolos ();
+    }
+
+    @Override 
+    public  Void  visitPrograma ( AlgumaParser . ProgramaContext  ctx ) {
+        saida . append ( " #include <stdio.h> \ n " );
+        saida . append ( " #include <stdlib.h> \ n " );
+        saida . anexar ( " \ n " );
+        ctx . declaracao () . forEach (dez - > visitaDeclaração (dez));
+        saida . anexar ( " \ n " );
+        saida . append ( " int main () { \ n " );
+        ctx . comando () . forEach (cmd - > visitComando (cmd));
+        saida . anexar ( " } \ n " );
+        return  null ;
+    }
+
+    @Override 
+    public  Void  visitDeclaracao ( AlgumaParser . DeclaracaoContext  ctx ) {
+         String nomeVar =  ctx . VARIAVEL () . getText ();
+        String strTipoVar =  ctx . TIPO_VAR () . getText ();
+        TabelaDeSimbolos . TipoAlguma tipoVar =  TabelaDeSimbolos . TipoAlguma . INVALIDO ;
+        switch (strTipoVar) {
+             case " INTEIRO " : 
+                tipoVar =  TabelaDeSimbolos . TipoAlguma . INTEIRO ;
+                strTipoVar =  " int " ;
+                pausa ;
+            case  " REAL " : 
+                tipoVar =  TabelaDeSimbolos . TipoAlguma . REAL ;
+                strTipoVar =  " float " ;
+                pausa ;
+            padrão : 
+                // Nunca irá acontecer, pois o analisador sintático 
+                // não permite 
+                pausa ;
+        }
+        // Podemos adicionar na tabela de símbolos sem verificar 
+        // pois a análise semântica já fez as verificações da 
+        tabela . adicionar (nomeVar, tipoVar);
+        saida . anexar (strTipoVar +  "  "  + nomeVar +  " ; \ n " );
+        return  null ;
+    }
+
+    @Override 
+    public  Void  visitComandoAtribuicao ( AlgumaParser . ComandoAtribuicaoContext  ctx ) {
+        saida . anexar ( ctx . VARIAVEL () . getText () +  " = " );
+        visitExpressaoAritmetica (ctx . expressaoAritmetica ());
+        saida . anexar ( " ; \ n " );
+        return  null ;
+    }
+
+    @Override 
+    public  Void  visitComandoCondicao ( AlgumaParser . ComandoCondicaoContext  ctx ) {
+        saida . append ( " if ( " );
+        visitExpressaoRelacional (ctx . expressaoRelacional ());
+        saida . anexar ( " ) \ n " );
+        visitComando (ctx . comando ( 0 ));
+        if (ctx . comando () . size () >  1 ) { // tem else 
+            saida . anexar ( " outro \ n " );
+            visitComando (ctx . comando ( 1 ));
+        }
+        return  null ;
+    }
+
+    @Override 
+    public  Void  visitComandoEntrada ( AlgumaParser . ComandoEntradaContext  ctx ) {
+         String nomeVar =  ctx . VARIAVEL () . getText ();
+        TipoAlguma tipoVariavel =  AlgumaSemanticoUtils . verificarTipo (tabela, nomeVar);
+        String aux =  " " ;
+        switch (tipoVariavel) {
+             case  INTEIRO : 
+                aux =  " % d ";
+                pausa ;
+            case  REAL : 
+                aux =  " % f " ;
+                pausa ;
+        }
+        saida . append ( " scanf ( \" "  + aux +  " \ " , & "  + nomeVar +  " ); \ n " );
+        return  null ;
+    }
+
+    @Override 
+    public  Void  visitComandoRepeticao ( AlgumaParser . ComandoRepeticaoContext  ctx ) {
+        saida . append ( " enquanto ( " );
+        visitExpressaoRelacional (ctx . expressaoRelacional ());
+        saida . anexar ( " ) \ n " );
+        visitComando (ctx . comando ());
+        return  null ;
+    }
+
+    @Override 
+    pública  Vazio  visitComandoSaida ( AlgumaParser . ComandoSaidaContext  ctx ) {
+         se ( ctx . CADEIA () ! =  Nulo ) {
+             Cadeia aux =  CTX . CADEIA () . getText ();
+            aux = aux . subsequência ( 1 , AUX . comprimento () -  1 );
+            saida . append ( " printf ( \" "  + aux +  " \\ n \ " ); \ n " );
+        } else {
+             TipoAlguma tipoExpressao =  AlgumaSemanticoUtils . verificarTipo (tabela, ctx . expressaoAritmetica ());
+            String aux =  " " ;
+            switch (tipoExpressao) {
+                 case  INTEIRO : 
+                    aux =  " % d " ;
+                    pausa ;
+                case  REAL : 
+                    aux =  " % f ";
+                    pausa ;
+            }
+            saida . append ( " printf ( \" "  + aux +  " \\ n \ " , " );
+            visitExpressaoAritmetica (ctx . expressaoAritmetica ());
+            saida . anexar ( " ); \ n " );
+        }
+        return  null ;
+    }
+
+    @Override 
+    public  Void  visitSubAlgoritmo ( AlgumaParser . SubAlgoritmoContext  ctx ) {
+        saida . anexar ( " { \ n " );
+        ctx . comando () . forEach (cmd - > visitComando (cmd));
+        saida . anexar ( " } \ n " );
+        return  null ;
+    }
+
+    @Override 
+    public  Void  visitExpressaoAritmetica ( AlgumaParser . ExpressaoAritmeticaContext  ctx ) {
+        visitTermoAritmetico (ctx . termoAritmetico ( 0 ));
+        para ( int i =  0 ; i <  ctx . OP_ARIT1 () . size (); i ++ ) {
+            saida . append ( "  "  +  ctx . OP_ARIT1 (i) . getText () +  "  " );
+            visitTermoAritmetico (ctx . termoAritmetico (i +  1 ));
+        }
+        return  null ;
+    }
+
+    @Override 
+    public  Void  visitTermoAritmetico ( AlgumaParser . TermoAritmeticoContext  ctx ) {
+        visitFatorAritmetico (ctx . fatorAritmetico ( 0 ));
+        para ( int i =  0 ; i <  ctx . OP_ARIT2 () . size (); i ++ ) {
+            saida . append ( "  "  +  ctx . OP_ARIT2 (i) . getText () +  "  " );
+            visitFatorAritmetico (ctx . fatorAritmetico (i +  1 ));
+        }
+        return  null ;
+    }
+
+    @Override 
+    pública  Vazio  visitFatorAritmetico ( AlgumaParser . FatorAritmeticoContext  ctx ) {
+         se ( ctx . NUMINT () ! =  Nulo ) {
+            saida . anexar ( ctx . NUMINT () . getText ());
+        } else  if ( ctx . NUMREAL () ! =  null ) {
+            saida . anexar ( ctx . NUMREAL () . getText ());
+        } else  if ( ctx . VARIAVEL () ! =  null ) {
+            saida . anexar ( ctx . VARIAVEL () . getText ());
+        } else {
+            saida . anexar ( " ( " );
+            visitExpressaoAritmetica (ctx . expressaoAritmetica ());
+            saida . anexar ( " ) " );
+        }
+        return  null ;
+    }
+
+    @Override 
+    public  Void  visitExpressaoRelacional ( AlgumaParser . ExpressaoRelacionalContext  ctx ) {
+        visitTermoRelacional (ctx . termoRelacional ( 0 ));
+        for ( int i =  0 ; i <  ctx . OP_BOOL () . size (); i ++ ) {
+             String aux =  null ;
+            if ( ctx . OP_BOOL (i) . getText () . equals ( " E " )) {
+                aux =  " && " ;
+            } else {
+                aux =  " || " ;
+            }
+            saida . anexar ( "  "  + aux +  "  " );
+            visitTermoRelacional (ctx . termoRelacional (i +  1 ));
+        }
+        return  null ;
+    }
+
+    @Override 
+    public  Void  visitTermoRelacional ( AlgumaParser . TermoRelacionalContext  ctx ) {
+         if (ctx . ExpressaoRelacional () ! =  Null ) {
+            saida . anexar ( " ( " );
+            visitExpressaoRelacional (ctx . expressaoRelacional ());
+            saida . anexar ( " ) " );
+        } else {
+            visitExpressaoAritmetica (ctx . expressaoAritmetica ( 0 ));
+            String aux =  ctx . OP_REL () . getText ();
+            if (aux . equals ( " <> " )) {
+                aux =  " ! = " ;
+            } else  if (aux . equals ( " = " )) {
+                aux =  " == " ;
+            }
+            saida . anexar ( "  "  + aux +  "  " );
+            visitExpressaoAritmetica (ctx . expressaoAritmetica ( 1 ));
+        }
+        return  null ;
+    }
+}
