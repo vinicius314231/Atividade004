@@ -1,0 +1,54 @@
+<? xml version = " 1.0 " encoding = " UTF-8 " ?>
+< projeto  xmlns = " http://maven.apache.org/POM/4.0.0 " 
+...
+    <build>
+        < plugins >
+            < plugin >
+                < groupId > org.antlr </ groupId >
+                < artifactId > antlr4-maven-plugin </ artifactId >
+                < versão > 4.7.2 </ versão >
+                < configuração >
+                    < visitante > verdadeiro </ visitante >
+                </ configuração >
+                < execuções >
+                    < execução >
+                        < id > antlr </ id >
+                        < metas >
+                            < objetivo > antlr4 </ objetivo >
+                        </ metas >
+                    </ execução >
+                </ execuções >
+            </ plugin >            
+            < plugin >
+                < artifactId > maven-assembly-plugin </ artifactId >
+                < configuração >
+                    < arquivo >
+                        < manifesto >
+< mainClass > br.ufscar.dc.compiladores.alguma.gerador.Principal </ mainClass >
+                        </ manifest >
+                    </ arquivo >
+                    < descriptorRefs >
+                        < descriptorRef > jar-with-dependencies </ descriptorRef >
+                    </ descriptorRefs >
+                </ configuração >
+                < execuções >
+                    < execução >
+                        < id > make-assembly </ id >
+                        < phase > package </ phase >
+                        < metas >
+                            < objetivo > único </ objetivo >
+                        </ metas >
+                    </ execução >
+                </ execuções >
+            </ plugin >
+        </ plugins >
+    </ build >
+    < dependências >
+        < dependência >
+            < groupId > org.antlr </ groupId >
+            < artifactId > antlr4 </ artifactId >
+            < versão > 4.7.2 </ versão >
+            < classificador > completo </ classificador >
+        </ dependency >
+    </ dependencies >      
+</ projeto >
