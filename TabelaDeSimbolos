@@ -1,0 +1,40 @@
+package  br.ufscar.dc.compiladores.alguma.gerador ;
+
+import  java.util.HashMap ;
+import  java.util.Map ;
+
+public  class  TabelaDeSimbolos {
+     public  enum  TipoAlguma {
+         INTEIRO ,
+         REAL ,
+         INVALIDO
+    }
+    
+    classe  EntradaTabelaDeSimbolos {
+         String nome;
+        TipoAlguma tipo;
+
+        private  EntradaTabelaDeSimbolos ( String  nome , TipoAlguma  tipo ) {
+             this . nome = nome;
+            isso . tipo = tipo;
+        }
+  `}
+    
+    private  final  Map < String , EntradaTabelaDeSimbolos > tabela;
+    
+    public  TabelaDeSimbolos () {
+         this . tabela =  novo  HashMap <> ();
+    }
+    
+    public  void  adicionar ( String  nome , TipoAlguma  tipo ) {
+        tabela . put (nome, novo  EntradaTabelaDeSimbolos (nome, tipo));
+    }
+    
+    public  boolean  existe ( String  nome ) {
+         retornar tabela . containsKey (nome);
+    }
+    
+    public  TipoAlguma  verificar ( String  nome ) {
+         retornar tabela . get (nome) . tipo;
+    }
+}
